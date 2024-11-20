@@ -1,4 +1,3 @@
-
 export default function Script() {
     console.log("Script is connected");
 
@@ -9,33 +8,22 @@ export default function Script() {
                 throw new Error('Failed to fetch public key');
             }
             const publicKeyPem = await publicKeyFetchResponse.text();
-
             const publicKey = forge.pki.publicKeyFromPem(publicKeyPem);
 
-            const secretKey = forge.random.getBytesSync(16);
-
-            const cipher = forge.cipher.createCipher('AES-CBC', secretKey);
-            const iv = forge.util.createBuffer(new Uint8Array(16));
-            cipher.start({ iv });
-            cipher.update(forge.util.createBuffer(data, 'utf8'));
-            cipher.finish();
-            const encryptedData = forge.util.encode64(cipher.output.bytes());
-
-            const encryptedSecretKey = forge.util.encode64(publicKey.encrypt(secretKey, 'RSA-OAEP'));
-
-            return { encryptedData, encryptedSecretKey };
+            const encryptedData = publicKey.encrypt(forge.util.encodeUtf8(data), 'RSA-OAEP');
+            return forge.util.bytesToHex(encryptedData);
         } catch (error) {
             console.error('Encryption error:', error);
             throw new Error('Encryption failed');
         }
     }
 
-    async function sendToServer(encryptedPayload) {
+    async function sendToServer(score) {
         try {
             const response = await fetch('/send-data', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(encryptedPayload),
+                body: JSON.stringify({ score })
             });
 
             const parsedResponse = await response.json();
@@ -60,8 +48,8 @@ export default function Script() {
         }
 
         try {
-            const encryptedPayload = await encryptData(data);
-            await sendToServer(encryptedPayload);
+            const score = await encryptData(data);
+            await sendToServer(score);
         } catch (error) {
             alert(error.message);
         } finally {

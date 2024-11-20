@@ -6,31 +6,23 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const handleEncryptedData = async (req, res) => {
-    const { encryptedData, encryptedSecretKey } = req.body;
+    const { score } = req.body;
 
     try {
         const privateKeyPem = await fs.readFile(privateKeyPath, 'utf8');
 
-        const secretKey = crypto.privateDecrypt(
+        const encryptedBuffer = Buffer.from(score, 'hex');
+        const decryptedData = crypto.privateDecrypt(
             {
                 key: privateKeyPem,
                 passphrase: process.env.SECURE_PASSPHRASE,
                 padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
             },
-            Buffer.from(encryptedSecretKey, 'base64')
+            encryptedBuffer
         );
+        const decryptedMessage = decryptedData.toString('utf8');
 
-        console.log('Decrypted Secret Key:', secretKey.toString('hex'));
-
-        console.log('Decrypting the encrypted data...');
-
-        const decipher = crypto.createDecipheriv('aes-128-cbc', secretKey, Buffer.alloc(16));
-        let decrypted = decipher.update(encryptedData, 'base64', 'utf8');
-        decrypted += decipher.final('utf8');
-
-        console.log('Decrypted Data:', decrypted);
-
-        const scoreData = new Score({ score: decrypted });
+        const scoreData = new Score({ score: decryptedMessage });
 
         try {
             const saveResult = await scoreData.submitScore();
@@ -41,7 +33,7 @@ const handleEncryptedData = async (req, res) => {
         }
 
     } catch (error) {
-        console.error("Error during decryption or processing:", error);
+        console.error("Error during decryption or reading file:", error);
         res.status(500).json({ message: error.message, error: error });
     }
 };
