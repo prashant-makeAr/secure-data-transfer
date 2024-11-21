@@ -3,3 +3,5 @@
 /public/script/main-bundled.js
 /public/public_key.pem
 private_key.pem
+/controllers/backup.js
+/frontend-js/modules/backup.js

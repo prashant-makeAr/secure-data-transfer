@@ -6,7 +6,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const handleEncryptedData = async (req, res) => {
-    const { encryptedData, encryptedSecretKey } = req.body;
+    const { encryptedData, encryptedSecretKey, iv } = req.body;
 
     try {
         const privateKeyPem = await fs.readFile(privateKeyPath, 'utf8');
@@ -24,13 +24,17 @@ const handleEncryptedData = async (req, res) => {
 
         console.log('Decrypting the encrypted data...');
 
-        const decipher = crypto.createDecipheriv('aes-128-cbc', secretKey, Buffer.alloc(16));
-        let decrypted = decipher.update(encryptedData, 'base64', 'utf8');
-        decrypted += decipher.final('utf8');
+        const ivBuffer = Buffer.from(iv, 'base64');
 
-        console.log('Decrypted Data:', decrypted);
+        const encryptedDataBuffer = Buffer.from(encryptedData, 'base64');
 
-        const scoreData = new Score({ score: decrypted });
+        const decipher = crypto.createDecipheriv('aes-128-cbc', secretKey, ivBuffer);
+        let decrypted = decipher.update(encryptedDataBuffer);
+        decrypted = Buffer.concat([decrypted, decipher.final()]);
+
+        console.log('Decrypted Data:', decrypted.toString('utf8'));
+
+        const scoreData = new Score({ score: decrypted.toString('utf8') });
 
         try {
             const saveResult = await scoreData.submitScore();
