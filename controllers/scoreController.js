@@ -38,7 +38,7 @@ const handleEncryptedData = async (req, res) => {
 
         try {
             const saveResult = await scoreData.submitScore();
-            res.status(200).json({ message: saveResult });
+            res.status(201).json({ message: saveResult });
         } catch (dbError) {
             console.error("Error saving score to the database:", dbError);
             res.status(500).json({ message: dbError.message });

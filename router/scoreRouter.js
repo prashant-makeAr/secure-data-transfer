@@ -8,6 +8,6 @@ router.get('/', (req, res) => {
     res.render('index');
 });
 
-router.post('/send-data', handleEncryptedData);
+router.post('/data', handleEncryptedData);
 
 module.exports = router;

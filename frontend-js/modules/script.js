@@ -47,7 +47,7 @@ export default function Script() {
 
     async function sendToServer(encryptedPayload) {
         try {
-            const response = await fetch('/send-data', {
+            const response = await fetch('/data', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(encryptedPayload),
