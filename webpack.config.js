@@ -8,6 +8,7 @@ module.exports = [
             path: path.resolve(__dirname, 'public/script'),
         },
         mode: 'production',
+        devtool: false,
         module: {
             rules: [
                 {
