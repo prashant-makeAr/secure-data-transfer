@@ -6,6 +6,7 @@ let Score = function (data) {
 };
 
 Score.prototype.validate = async function () {
+
     if (!this.data.score) {
         this.errors.push("You must submit a valid score");
     } else {
